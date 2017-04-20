@@ -83,7 +83,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		*/
 		double ro = measurement_pack.raw_measurements_(0);
 		double phi = measurement_pack.raw_measurements_(1);
-		double ro_dot = measurement_pack.raw_measurements_(2);
 
 		x = ro * cos(phi);
 		y = ro * sin(phi);
@@ -110,14 +109,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 		ekf_.x_ << x, y, 0, 0;
 
 		previous_timestamp_ = measurement_pack.timestamp_;
-
-		if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) 
-		{
-			this->Hj_ = tools.CalculateJacobian(ekf_.x_);
-		}
-		else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) 
-		{
-		}
 
 		// done initializing, no need to predict or update
 		is_initialized_ = true;
@@ -149,6 +140,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack)
 	double dt_2 = dt * dt;
 	double dt_3 = dt_2 * dt;
 	double dt_4 = dt_3 * dt;
+
+	const double noise_ax = 9;
+	const double noise_ay = 9;
 
 	ekf_.Q_ = MatrixXd(4, 4);
 	ekf_.Q_ << dt_4 / 4 * noise_ax, 0, dt_3 / 2 * noise_ax, 0,
